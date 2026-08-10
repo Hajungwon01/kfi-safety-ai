@@ -1,0 +1,46 @@
+# Render Blueprint — https://render.com/docs/blueprint-spec
+# Render 대시보드에서 "New +" → "Blueprint"로 이 저장소를 연결하면 아래 설정을 그대로 읽어
+# 서비스를 만들어줍니다. sync: false로 표시된 값들은 여기서 커밋되지 않고, Render 대시보드의
+# Environment 탭에서 직접 입력해야 하는 비밀값입니다(레포에 실 키가 올라가지 않도록).
+services:
+  - type: web
+    name: kfi-safety-ai
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      # true면 mock 데이터로만 동작(데모용, KFI 키 불필요). 실 API 연동을 쓰려면 false로 바꾸고
+      # 아래 KFI_SERVICE_KEY를 채운 뒤, 배포 후 POST /api/admin/sync-kfi를 한 번 호출해야 합니다.
+      - key: USE_MOCK
+        value: "false"
+      - key: KFI_SERVICE_KEY
+        sync: false
+      - key: KFI_GDS_CL_CODES
+        value: "01"
+      # 무작위 값을 Render가 자동 생성합니다. 배포 후 값을 바꾸면 기존에 발급된 로그인 토큰이 전부 무효화됩니다.
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        value: admin@kfi.go.kr
+      - key: ADMIN_PASSWORD
+        sync: false
+      # 없어도 챗봇은 지식베이스 검색결과 폴백 모드로 정상 동작합니다. 자연어 생성을 쓰려면 채워주세요.
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_BASE_URL
+        value: https://api.openai.com/v1
+      - key: OPENAI_CHAT_MODEL
+        value: gpt-4o-mini
+      - key: OPENAI_EMBED_MODEL
+        value: text-embedding-3-small
+
+    # 참고: 기본(디스크 미설정) 상태에서는 SQLite 파일(data/app.db)이 재배포·재시작 시 초기화됩니다.
+    # 데이터를 계속 유지하고 싶다면 유료 인스턴스 타입에서 아래처럼 영구 디스크를 추가하고,
+    # DB_PATH 환경변수를 디스크 마운트 경로 안쪽(mountPath 값 + "/app.db")으로 지정하세요.
+    # disks:
+    #   - name: kfi-data
+    #     mountPath: /var/data
+    #     sizeGB: 1

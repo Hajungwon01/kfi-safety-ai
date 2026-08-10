@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>소방용품 안전지킴이 AI</title>
+<style>
+  :root { --navy:#1F3864; --blue:#2E5395; --orange:#E8622C; --bg:#F5F7FA; --card:#FFFFFF;
+    --danger:#D93025; --warn:#E8A33D; --safe:#1E8E5A; --border:#E1E5EC; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif; background:#fff; color:#222; line-height:1.6; }
+  a { color:inherit; text-decoration:none; }
+
+  .nav { display:flex; align-items:center; justify-content:space-between; padding:16px 32px; border-bottom:1px solid var(--border); }
+  .nav .logo { display:flex; align-items:center; gap:8px; font-size:19px; font-weight:800; color:var(--navy); }
+  .nav .cta { background:var(--navy); color:#fff; border:none; padding:10px 20px; border-radius:8px; font-size:13.5px; font-weight:700; cursor:pointer; }
+  .nav .cta:hover { background:var(--blue); }
+
+  .hero { text-align:center; padding:64px 20px 40px; background:linear-gradient(180deg,#F5F8FF,#fff); }
+  .hero h1 { margin:0; font-size:34px; color:#12213F; line-height:1.35; }
+  .hero h1 .accent { color:var(--orange); }
+  .hero p { margin:18px auto 0; max-width:560px; color:#555; font-size:15px; }
+  .hero .actions { margin-top:26px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+  .hero .btn-primary { background:var(--navy); color:#fff; border:none; padding:13px 26px; border-radius:9px; font-size:14.5px; font-weight:700; cursor:pointer; }
+  .hero .btn-primary:hover { background:var(--blue); }
+  .hero .btn-outline { background:#fff; color:var(--navy); border:1px solid var(--navy); padding:13px 26px; border-radius:9px; font-size:14.5px; font-weight:700; cursor:pointer; }
+
+  .disclaimer { max-width:1040px; margin:28px auto 0; background:#FFF7E6; border:1px solid #F0D28A; color:#7A5B00; border-radius:10px; padding:13px 18px; font-size:13px; text-align:center; }
+
+  .section { max-width:1040px; margin:0 auto; padding:44px 20px; }
+  .section .lead { text-align:center; max-width:640px; margin:0 auto 26px; color:#555; font-size:13.5px; }
+  .section .lead b { color:var(--navy); }
+  .cards6 { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:34px; }
+  .fcard { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:22px 18px; text-align:center; }
+  .fcard .ic { width:42px; height:42px; border-radius:12px; background:#EDF1F8; display:flex; align-items:center; justify-content:center; font-size:20px; margin:0 auto 12px; }
+  .fcard h3 { margin:0 0 6px; font-size:14.5px; color:var(--navy); }
+  .fcard p { margin:0; font-size:12px; color:#777; }
+
+  .split { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:8px; }
+  .panel { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:22px 24px; }
+  .panel h4 { margin:0 0 14px; font-size:15px; color:var(--navy); display:flex; align-items:center; gap:8px; padding-bottom:10px; border-bottom:2px solid var(--navy); }
+  .flow-step { display:flex; align-items:flex-start; gap:12px; padding:9px 0; font-size:13px; }
+  .flow-step .num { width:22px; height:22px; flex-shrink:0; border-radius:50%; background:var(--navy); color:#fff; display:flex; align-items:center; justify-content:center; font-size:11.5px; font-weight:700; }
+  .flow-step .tx b { color:#222; }
+  .flow-step .tx span { color:#888; font-size:12px; }
+  .info-row { display:flex; align-items:center; gap:10px; padding:9px 0; font-size:13px; border-bottom:1px solid #F1F2F5; }
+  .info-row:last-child { border-bottom:none; }
+  .info-row .ic { font-size:15px; width:20px; text-align:center; }
+  .info-row b { display:block; font-size:13px; }
+  .info-row span { color:#888; font-size:11.5px; }
+
+  .final-cta { text-align:center; padding:50px 20px 70px; }
+  .final-cta h2 { font-size:22px; color:var(--navy); margin:0 0 10px; }
+  .final-cta p { color:#777; font-size:13.5px; margin:0 0 20px; }
+
+  footer { text-align:center; font-size:12px; color:#999; padding:22px 0 40px; border-top:1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<div class="nav">
+  <div class="logo">🧯 소방용품 안전지킴이 AI</div>
+  <button class="cta" onclick="location.href='/login.html'">시작하기</button>
+</div>
+
+<div class="hero">
+  <h1>우리 <span class="accent">소화기</span>, 안전한가요?<br>AI가 사고 관리까지 확인해드려요</h1>
+  <p>KFI(한국소방산업기술원) 공공데이터를 기반으로 구매 시점의 사칭사기·미인증 제품을 판별하고,
+  보유 기간의 내용연수·정비이력·리콜을 지속 관리합니다. 챗봇 하나로 조회부터 등록·신고까지 바로 처리됩니다.</p>
+  <div class="actions">
+    <button class="btn-primary" onclick="location.href='/login.html'">시작하기</button>
+    <button class="btn-outline" onclick="document.getElementById('guide').scrollIntoView({behavior:'smooth'})">서비스 안내</button>
+  </div>
+</div>
+
+<div class="disclaimer">⚠️ 본 서비스는 KFI 공공데이터 및 관련 법령을 기반으로 안내합니다. 법적 효력이 있는 공식 답변이 아님을 유의해 주세요. 🧯</div>
+
+<div class="section" id="guide">
+  <p class="lead">로그인하면 화면 이동 없이 <b>챗봇 하나</b>로 아래 6가지를 전부 처리할 수 있어요. 버튼을 누르면 사용법을 안내해주고, 채팅으로 실제 조회·등록·신고까지 이어집니다.</p>
+  <div class="cards6">
+    <div class="fcard">
+      <div class="ic">🧾</div>
+      <h3>공문 판별</h3>
+      <p>받은 공문·안내문이 사칭사기인지 위험도를 분석합니다.</p>
+    </div>
+    <div class="fcard">
+      <div class="ic">📋</div>
+      <h3>승인번호 조회</h3>
+      <p>제품 승인이 정상 등록됐는지, 취소(리콜)됐는지 확인합니다.</p>
+    </div>
+    <div class="fcard">
+      <div class="ic">🏢</div>
+      <h3>업체 확인</h3>
+      <p>거래하려는 판매업체가 KFI 등록업체인지 확인합니다.</p>
+    </div>
+    <div class="fcard">
+      <div class="ic">📦</div>
+      <h3>소화기 조회·등록</h3>
+      <p>합격표시번호로 내용연수·정비이력을 확인하고 내 소화기함에 자동 등록합니다.</p>
+    </div>
+    <div class="fcard">
+      <div class="ic">🗄</div>
+      <h3>내 소화기함 보기</h3>
+      <p>지금까지 등록한 소화기 전체 목록과 안전등급을 보여줍니다.</p>
+    </div>
+    <div class="fcard">
+      <div class="ic">🔔</div>
+      <h3>내 알림 확인</h3>
+      <p>등록한 소화기의 리콜·점검 알림을 모아 보여줍니다.</p>
+    </div>
+  </div>
+
+  <div class="split">
+    <div class="panel">
+      <h4>📍 이용 절차</h4>
+      <div class="flow-step"><div class="num">1</div><div class="tx"><b>회원가입 · 로그인</b><br><span>이메일/비밀번호로 간단 가입</span></div></div>
+      <div class="flow-step"><div class="num">2</div><div class="tx"><b>챗봇에 물어보기</b><br><span>프리셋 카드를 누르면 입력창에 예시 문구가 채워집니다. 빈칸만 채우거나 직접 문장을 입력해 전송</span></div></div>
+      <div class="flow-step"><div class="num">3</div><div class="tx"><b>자동 조회·등록</b><br><span>챗봇이 실제 KFI 데이터로 진위를 확인하고 내 소화기함에 등록</span></div></div>
+      <div class="flow-step"><div class="num">4</div><div class="tx"><b>지속 관리</b><br><span>내용연수 도래·리콜 발생 시 알림, 채팅으로 언제든 재확인</span></div></div>
+    </div>
+    <div class="panel">
+      <h4>🛡 서비스 안내</h4>
+      <div class="info-row"><span class="ic">⏰</span><div><b>24시간 이용 가능</b><span>언제든 조회·챗봇 상담 가능</span></div></div>
+      <div class="info-row"><span class="ic">🗄</span><div><b>KFI 공공데이터 기반</b><span>승인정보·업체정보·취소정보·정비이력 연동</span></div></div>
+      <div class="info-row"><span class="ic">🔒</span><div><b>로컬 실행</b><span>개인정보가 외부로 전송되지 않는 로컬 서버 구조</span></div></div>
+      <div class="info-row"><span class="ic">🔔</span><div><b>리콜 자동 알림</b><span>등록 제품이 리콜되면 즉시 알림(DB 기록)</span></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="final-cta">
+  <h2>지금 바로 확인해보세요</h2>
+  <p>회원가입은 1분이면 충분합니다.</p>
+  <button class="hero-btn btn-primary" style="background:var(--navy);color:#fff;border:none;padding:13px 30px;border-radius:9px;font-size:14.5px;font-weight:700;cursor:pointer;" onclick="location.href='/login.html'">무료로 시작하기</button>
+</div>
+
+<footer>소방용품 안전지킴이 AI · 2026 KFI AI 혁신 경진대회 · 로컬 백엔드(FastAPI+SQLite) 연동</footer>
+
+</body>
+</html>

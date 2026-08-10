@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>소방용품 안전지킴이 AI — 챗봇</title>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<style>
+  :root { --navy:#1F3864; --blue:#2E5395; --orange:#E8622C; --bg:#F5F7FA; --card:#FFFFFF;
+    --danger:#D93025; --warn:#E8A33D; --safe:#1E8E5A; --border:#E1E5EC; --sidebar-w:220px; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif; background:var(--bg); color:#222; line-height:1.55; }
+
+  /* ---- 레이아웃: 사이드바 + 콘텐츠 ---- */
+  .shell { display:flex; min-height:100vh; }
+  .sidebar { width:var(--sidebar-w); flex-shrink:0; background:linear-gradient(180deg,var(--navy),#152A4D); color:#fff; display:flex; flex-direction:column; padding:20px 0; position:sticky; top:0; height:100vh; }
+  .sidebar .brand { padding:0 20px 18px; font-size:15px; font-weight:800; border-bottom:1px solid rgba(255,255,255,.15); margin-bottom:14px; }
+  .sidebar .who { padding:0 20px 14px; font-size:12px; opacity:.85; border-bottom:1px solid rgba(255,255,255,.1); margin-bottom:8px; }
+  .navitem { display:flex; align-items:center; gap:10px; padding:12px 20px; font-size:13.5px; cursor:pointer; color:rgba(255,255,255,.8); border-left:3px solid transparent; }
+  .navitem:hover { background:rgba(255,255,255,.06); color:#fff; }
+  .navitem.active { background:rgba(255,255,255,.12); color:#fff; border-left-color:var(--orange); font-weight:700; }
+  .navitem .badge-count { margin-left:auto; background:var(--danger); color:#fff; font-size:10.5px; font-weight:700; padding:1px 7px; border-radius:999px; }
+  .sidebar .spacer { flex:1; }
+  .sidebar .logout { padding:12px 20px; font-size:12.5px; color:rgba(255,255,255,.7); cursor:pointer; border-top:1px solid rgba(255,255,255,.15); }
+  .sidebar .logout:hover { color:#fff; }
+
+  .content { flex:1; min-width:0; }
+  .topbar { background:#fff; border-bottom:1px solid var(--border); padding:16px 26px; display:flex; align-items:center; justify-content:space-between; }
+  .topbar h1 { margin:0; font-size:17px; color:var(--navy); }
+  .topbar .badge { display:inline-block; background:var(--orange); color:#fff; font-size:11px; font-weight:700; padding:3px 9px; border-radius:999px; margin-right:8px; }
+  .wrap { max-width:900px; margin:0 auto; padding:22px 24px 60px; }
+
+  .notice { background:#FFF7E6; border:1px solid #F0D28A; color:#7A5B00; border-radius:10px; padding:12px 16px; font-size:13px; margin-bottom:22px; }
+  .notice b { color:#5C4400; }
+  .demo-bar { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+  .demo-bar button { background:var(--card); border:1px solid var(--border); color:var(--navy); padding:9px 14px; border-radius:8px; font-size:13px; cursor:pointer; font-weight:600; }
+  .demo-bar button:hover { background:#EDF1F8; }
+  .demo-bar button.alarm { border-color:var(--danger); color:var(--danger); }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:22px 22px 24px; margin-bottom:18px; box-shadow:0 1px 3px rgba(20,30,60,.05); }
+  .card h2 { margin:0 0 4px; font-size:16px; color:var(--navy); display:flex; align-items:center; gap:8px; }
+  button.ghost { background:#fff; color:var(--navy); border:1px solid var(--navy); padding:9px 16px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; }
+  .dash-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:6px; }
+  .dash-item { background:#F8F9FC; border:1px solid var(--border); border-radius:10px; padding:14px; text-align:center; }
+  .dash-item .num { font-size:22px; font-weight:800; color:var(--navy); }
+  .dash-item .lbl { font-size:12px; color:#666; margin-top:4px; }
+  .bars { margin-top:16px; }
+  .bar-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; font-size:12px; }
+  .bar-row .name { width:100px; flex-shrink:0; color:#444; }
+  .bar-track { flex:1; background:#EEF1F6; border-radius:6px; height:14px; overflow:hidden; }
+  .bar-fill { height:100%; background:linear-gradient(90deg,var(--blue),var(--navy)); border-radius:6px; }
+  .bar-row .val { width:34px; text-align:right; color:#666; }
+  table.rep-table { width:100%; border-collapse:collapse; margin-top:12px; font-size:12.5px; }
+  table.rep-table th, table.rep-table td { border-bottom:1px solid var(--border); padding:8px 6px; text-align:left; }
+  table.rep-table th { color:#666; font-weight:700; background:#F8F9FC; }
+  .badge-lv { padding:2px 8px; border-radius:999px; font-size:11px; font-weight:700; }
+  .badge-lv.safe, .badge-lv.안전 { background:#EAF7EF; color:#14532D; }
+  .badge-lv.warn, .badge-lv.주의 { background:#FFF4E1; color:#6B4A00; }
+  .badge-lv.danger, .badge-lv.위험 { background:#FDEBEA; color:#7A1F19; }
+  .badge-type { padding:2px 8px; border-radius:999px; font-size:11px; font-weight:700; background:#EDF1F8; color:var(--navy); }
+  .empty-row td { text-align:center; color:#999; padding:16px; }
+  .view { display:none; }
+  .view.active { display:block; }
+  .alert-banner { display:none; background:#FDEBEA; border:1px solid var(--danger); color:#7A1F19; border-radius:10px; padding:12px 16px; font-size:13.5px; margin-bottom:16px; font-weight:700; }
+  .alert-banner.show { display:block; }
+
+  /* ---- 프리셋(채팅 입력창 바로 위, 문구완성 칩) ---- */
+  .preset-grid { display:flex; gap:7px; flex-wrap:wrap; padding:9px 10px 0; background:#fff; border-top:1px solid var(--border); }
+  .preset-card { display:inline-flex; align-items:center; gap:5px; background:#fff; border:1px solid var(--border); border-radius:999px; padding:6px 12px 6px 10px; font-size:12px; font-weight:700; color:var(--navy); cursor:pointer; white-space:nowrap; transition:.15s; }
+  .preset-card:hover { border-color:var(--navy); background:#EDF1F8; }
+  .preset-card .ic { font-size:14px; }
+  .preset-card .lab { font-size:12px; }
+  .preset-card .photo-badge { font-size:11px; opacity:.7; margin-left:1px; }
+
+  /* ---- 챗봇 (메인 화면에 임베드) ---- */
+  .chat-embed { display:flex; flex-direction:column; background:#fff; border:1px solid var(--border); border-radius:14px; box-shadow:0 1px 3px rgba(20,30,60,.05); overflow:hidden; height:min(600px, 68vh); }
+  .chat-head { background:var(--navy); color:#fff; padding:12px 16px; font-size:13.5px; font-weight:700; }
+  .chat-body { flex:1; overflow-y:auto; padding:14px; display:flex; flex-direction:column; gap:9px; background:#F8F9FC; }
+  .chat-msg { max-width:88%; padding:9px 12px; border-radius:10px; font-size:13px; line-height:1.55; }
+  .chat-msg.user { align-self:flex-end; background:var(--navy); color:#fff; }
+  .chat-msg.bot { align-self:flex-start; background:#fff; border:1px solid var(--border); color:#222; }
+  .chat-msg .src { margin-top:6px; font-size:11.5px; color:#888; }
+  .chat-msg .src-card { background:#F0F3FA; border-radius:6px; padding:6px 8px; margin-top:4px; }
+  .chat-msg .src-card b { color:var(--navy); }
+  .chat-report-row { margin-top:10px; padding-top:10px; border-top:1px solid var(--border); display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .chat-report-row select { width:auto; padding:6px 8px; font-size:12px; border:1px solid var(--border); border-radius:6px; }
+  .chat-report-row button { border:none; padding:7px 12px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; }
+  .btn-report { background:var(--danger); color:#fff; }
+  .btn-report:disabled { background:#ccc; cursor:default; }
+  .chat-input-row { display:flex; gap:6px; padding:10px; border-top:1px solid var(--border); background:#fff; align-items:center; }
+  .chat-input-row input[type=text] { flex:1; border:1px solid var(--border); border-radius:8px; padding:9px 11px; font-size:13px; }
+  .chat-input-row button { background:var(--navy); color:#fff; border:none; border-radius:8px; padding:9px 14px; font-size:13px; font-weight:700; cursor:pointer; }
+  .ocr-icon-btn { display:flex; align-items:center; justify-content:center; width:36px; height:36px; flex-shrink:0; background:#EDF1F8; color:var(--navy); border:1px dashed var(--blue); border-radius:8px; font-size:16px; cursor:pointer; }
+  .ocr-icon-btn input { display:none; }
+  .ocr-status { font-size:11.5px; color:var(--blue); padding:0 10px 8px; min-height:14px; }
+  .chat-quick { display:flex; gap:6px; flex-wrap:wrap; padding:0 10px 8px; }
+  .chat-quick button { background:#EDF1F8; color:var(--navy); border:1px solid var(--border); border-radius:999px; padding:4px 10px; font-size:11px; cursor:pointer; }
+
+  @media (max-width: 720px){ .sidebar { width:64px; } .sidebar .brand, .sidebar .who, .navitem span.label { display:none; } .navitem { justify-content:center; } }
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <div class="sidebar">
+    <div class="brand">🧯 안전지킴이 AI</div>
+    <div class="who" id="whoami"></div>
+    <div class="navitem active" data-view="chat" onclick="switchView('chat')">💬 <span class="label">챗봇 상담</span><span class="badge-count" id="notifCount" style="display:none">0</span></div>
+    <div class="navitem" data-view="admin" id="navAdmin" onclick="switchView('admin')" style="display:none">📊 <span class="label">관제 대시보드</span></div>
+    <div class="spacer"></div>
+    <div class="logout" onclick="logout()">↪ 로그아웃</div>
+  </div>
+
+  <div class="content">
+    <div class="topbar">
+      <h1 id="pageTitle"><span class="badge">2026 KFI AI 혁신 경진대회</span>챗봇 상담</h1>
+    </div>
+
+    <div class="wrap">
+      <div class="notice" id="noticeBox">서버 상태 확인 중...</div>
+      <div class="alert-banner" id="recallAlert"></div>
+
+      <!-- ===== 챗봇 (메인 화면) ===== -->
+      <div class="view active" id="view-chat">
+        <p style="color:#666;font-size:14px;margin-bottom:14px;">소화기를 살 때부터 버릴 때까지, 챗봇 하나로 조회·등록·신고까지 처리하세요.</p>
+
+        <div class="chat-embed">
+          <div class="chat-head">🤖 소방안전 상담 챗봇</div>
+          <div class="chat-quick">
+            <button onclick="askQuick('소화기 내용연수 지나면 어떻게 되나요?')">내용연수?</button>
+            <button onclick="askQuick('소방서 사칭 사기는 어떤 수법인가요?')">사칭사기 수법?</button>
+            <button onclick="askQuick('승인번호랑 합격표시번호는 뭐가 다른가요?')">번호 차이?</button>
+          </div>
+          <div class="chat-body" id="chatBody">
+            <div class="chat-msg bot">안녕하세요! 저는 소방용품 안전지킴이 AI 챗봇입니다. 아래 버튼을 누르면 입력창에 예시 문구가 채워지니 빈칸만 채워서 보내시거나, 승인번호·합격표시번호·업체명·공문 내용을 그대로 채팅으로 보내주셔도 바로 조회해드립니다. 소방 규정이나 사칭사기 수법이 궁금하면 그냥 물어보셔도 돼요.</div>
+          </div>
+          <div class="preset-grid" id="presetGrid"></div>
+          <div class="ocr-status" id="chatOcrStatus"></div>
+          <div class="chat-input-row">
+            <label class="ocr-icon-btn" title="공문/소화기 라벨 사진을 올리면 텍스트를 자동으로 읽어드려요(OCR)">📷<input type="file" accept="image/*" id="chatImage" onchange="runChatOCR(this)" /></label>
+            <input type="text" id="chatInput" placeholder="질문을 입력하세요..." onkeydown="if(event.key==='Enter') sendChat()" />
+            <button onclick="sendChat()">전송</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 관제 대시보드(관리자 전용) ===== -->
+      <div class="view" id="view-admin">
+        <div class="demo-bar">
+          <button class="alarm" onclick="simulateRecallEvent()">🔔 리콜 발생 시뮬레이션(테스트용, 관리자 액션)</button>
+        </div>
+        <div class="card">
+          <h2>📊 통합 관제 대시보드 <button class="ghost" style="float:right" onclick="loadAdminDashboard()">새로고침</button></h2>
+          <div class="dash-grid">
+            <div class="dash-item"><div class="num" id="statFraud">0</div><div class="lbl">누적 사기신고</div></div>
+            <div class="dash-item"><div class="num" id="statMaint">0</div><div class="lbl">누적 점검·교체 요청</div></div>
+            <div class="dash-item"><div class="num" id="statUnits">4</div><div class="lbl">등록 소화기(mock 기준)</div></div>
+          </div>
+        </div>
+        <div class="card"><h2>🗺 지역별 접수 현황</h2><div class="bars" id="regionBars"></div></div>
+        <div class="card">
+          <h2>📋 최근 접수 내역</h2>
+          <table class="rep-table"><thead><tr><th>시각</th><th>유형</th><th>지역</th><th>대상</th><th>사유</th><th>위험도</th></tr></thead>
+          <tbody id="reportTableBody"><tr class="empty-row"><td colspan="6">불러오는 중...</td></tr></tbody></table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="/js/common.js"></script>
+<script src="/js/app.js"></script>
+</body>
+</html>

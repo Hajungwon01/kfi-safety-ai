@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>로그인 — 소방용품 안전지킴이 AI</title>
+<style>
+  :root { --navy:#1F3864; --blue:#2E5395; --border:#E1E5EC; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Malgun Gothic","Apple SD Gothic Neo","Noto Sans KR",sans-serif; background:#F5F7FA; color:#222;
+    min-height:100vh; display:flex; align-items:center; justify-content:center; }
+  a { color:var(--blue); text-decoration:none; font-size:12.5px; }
+  .box { background:#fff; border:1px solid var(--border); border-radius:16px; padding:36px 34px; width:100%; max-width:380px; box-shadow:0 4px 20px rgba(20,30,60,.06); }
+  .box .logo { text-align:center; font-size:20px; font-weight:800; color:var(--navy); margin-bottom:6px; }
+  .box .sub { text-align:center; font-size:12.5px; color:#888; margin-bottom:26px; }
+  label { display:block; font-size:12.5px; color:#555; margin:14px 0 6px; font-weight:700; }
+  input[type=text], input[type=password] { width:100%; border:1px solid var(--border); border-radius:8px; padding:11px 12px; font-size:14px; font-family:inherit; }
+  .row-btns { display:flex; gap:8px; margin-top:22px; }
+  button.primary { flex:1; background:var(--navy); color:#fff; border:none; padding:12px; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; }
+  button.primary:hover { background:var(--blue); }
+  button.ghost { flex:1; background:#fff; color:var(--navy); border:1px solid var(--navy); padding:12px; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; }
+  .msg { margin-top:14px; font-size:12.5px; text-align:center; min-height:16px; color:var(--navy); }
+  .msg.error { color:#D93025; }
+  .back { text-align:center; margin-top:18px; }
+</style>
+</head>
+<body>
+
+<div class="box">
+  <div class="logo">🧯 소방용품 안전지킴이 AI</div>
+  <div class="sub">로그인하고 내 소화기함 · 알림을 이용하세요</div>
+
+  <label for="authEmail">이메일</label>
+  <input type="text" id="authEmail" placeholder="you@example.com" />
+  <label for="authPassword">비밀번호</label>
+  <input type="password" id="authPassword" placeholder="비밀번호" onkeydown="if(event.key==='Enter') doLogin()" />
+
+  <div class="row-btns">
+    <button class="ghost" onclick="doRegister()">회원가입</button>
+    <button class="primary" onclick="doLogin()">로그인</button>
+  </div>
+  <div class="msg" id="authMsg"></div>
+
+  <div class="back"><a href="/index.html">← 서비스 소개로 돌아가기</a></div>
+</div>
+
+<script src="/js/common.js"></script>
+<script src="/js/login.js"></script>
+</body>
+</html>

@@ -56,10 +56,20 @@ def _call_api(url: str, params: dict) -> dict:
         body = res.json()
     except ValueError:
         raise RuntimeError(f"KFI API 응답이 JSON이 아닙니다 (HTTP {res.status_code}): {res.text[:300]}")
-    result_code = body.get("resultCode", body.get("response", {}).get("header", {}).get("resultCode"))
+    # 실제 응답(활용가이드 확인)은 {"data":[...], "header":{"resultCode":...}} 형태다.
+    # 옛 data.go.kr 표준 포맷(response.header)이나 data.go.kr 공통 인증오류 포맷(cmmMsgHeader)도
+    # 함께 대비한다 — 서비스키 미승인/오류 시 이쪽으로 응답이 오는 경우가 많다.
+    header = body.get("header") or body.get("response", {}).get("header") or {}
+    cmm = body.get("cmmMsgHeader")
+    if cmm:
+        raise RuntimeError(f"KFI API 인증/서비스 오류: {cmm.get('returnAuthMsg') or cmm.get('errMsg') or cmm}")
+    result_code = header.get("resultCode", body.get("resultCode"))
     if result_code not in (None, "00", "0", 0):
-        msg = body.get("resultMsg") or body.get("response", {}).get("header", {}).get("resultMsg") or result_code
+        msg = header.get("resultMsg") or body.get("resultMsg") or result_code
         raise RuntimeError(f"KFI API 오류 응답: {msg}")
+    if result_code is None and "data" not in body and "items" not in body and "item" not in body:
+        # data도 없고 알려진 성공/오류 신호도 없는 낯선 응답 — 원인 파악을 위해 앞부분을 그대로 노출한다.
+        raise RuntimeError(f"KFI API 예상치 못한 응답 형식: {str(body)[:300]}")
     return body
 
 
@@ -82,7 +92,8 @@ def _extract_rows(body: dict) -> list:
 
 
 def _extract_total(body: dict, fallback: int) -> int:
-    total = body.get("totalCount", body.get("response", {}).get("body", {}).get("totalCount"))
+    header = body.get("header") or body.get("response", {}).get("header") or {}
+    total = header.get("totalCount", body.get("totalCount", body.get("response", {}).get("body", {}).get("totalCount")))
     return fallback if total is None else int(total)
 
 

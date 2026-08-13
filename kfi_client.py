@@ -64,6 +64,11 @@ def _call_api(url: str, params: dict) -> dict:
 
 
 def _extract_rows(body: dict) -> list:
+    # 공식 활용가이드(OpenAPI활용가이드_소방산업기술원_소방용품업체정보.docx) 확인 결과,
+    # 이 기관(B552486) API의 실제 응답은 {"data": [...]} 형태다. 아래 나머지 분기는
+    # (문서에 나온 필드표와 달리) 혹시 다른 세부기능이 다른 포맷을 쓸 경우를 대비한 폴백이다.
+    if isinstance(body.get("data"), list):
+        return body["data"]
     if isinstance(body.get("items"), list):
         return body["items"]
     items = body.get("response", {}).get("body", {}).get("items", {})
@@ -88,7 +93,10 @@ def _fetch_all_pages(url: str, base_params: dict, num_of_rows=100, max_pages=50)
         rows = _extract_rows(body)
         items.extend(rows)
         total = _extract_total(body, len(items))
-        if not rows or len(items) >= total:
+        # 실제 응답에는 totalCount가 없을 수도 있어(활용가이드 예제 참고), 이 경우 total은 fallback=len(items)이
+        # 되어 아래 두 번째 조건으로는 판단이 안 된다. 그래서 "이번 페이지가 요청한 개수보다 적게 왔다"는
+        # 것도 마지막 페이지 신호로 함께 본다.
+        if not rows or len(rows) < num_of_rows or len(items) >= total:
             break
     return items
 
@@ -172,7 +180,7 @@ def sync_companies(gds_cl_codes=None) -> dict:
                 conn.execute(
                     """INSERT INTO companies (name,role,rep,address,phone) VALUES (?,?,?,?,?)
                        ON CONFLICT(name) DO UPDATE SET rep=excluded.rep, address=excluded.address, phone=excluded.phone""",
-                    (name, "제조업체", r.get("rprsvNm") or r.get("ceo") or "", r.get("adres") or r.get("address") or "", r.get("telno") or r.get("tel") or ""),
+                    (name, "제조업체", r.get("rprsvPnm") or r.get("rprsvNm") or r.get("ceo") or "", r.get("fctryAdr") or r.get("adres") or r.get("address") or "", r.get("fctryTelno") or r.get("telno") or r.get("tel") or ""),
                 )
                 synced += 1
     conn.commit()

@@ -26,10 +26,10 @@ async function loadHealth(){
   try {
     const r = await fetch("/api/health"); const body = await r.json();
     document.getElementById("noticeBox").innerHTML =
-      `⚠ 이 페이지는 로컬 백엔드(<code>http://localhost:4000</code>)와 실제로 통신합니다. 현재 <b>${body.mockMode ? "MOCK 모드" : "실 KFI API 모드"}</b>로 동작 중입니다. ` +
+      `⚠ 현재 <b>${body.mockMode ? "MOCK 모드" : "실 KFI API 모드"}</b>로 동작 중입니다. ` +
       (body.mockMode ? "실 데이터로 전환하려면 .env에 KFI_SERVICE_KEY를 설정하고 USE_MOCK=false로 바꾸세요(README 참고)." : "실제 data.go.kr 응답을 사용합니다.");
   } catch {
-    document.getElementById("noticeBox").innerHTML = "🚨 백엔드 서버에 연결할 수 없습니다. <code>uvicorn main:app</code>로 서버를 먼저 실행하세요.";
+    document.getElementById("noticeBox").innerHTML = "🚨 백엔드 서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.";
   }
 }
 loadHealth();

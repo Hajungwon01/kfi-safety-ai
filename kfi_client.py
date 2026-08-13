@@ -50,7 +50,9 @@ def _guess_type(endpoint: str) -> str:
 def _call_api(url: str, params: dict) -> dict:
     if not SERVICE_KEY:
         raise RuntimeError("KFI_SERVICE_KEY가 설정되지 않았습니다. .env를 확인하세요.")
-    q = {"ServiceKey": SERVICE_KEY, **params}
+    # 활용가이드 실제 요청 예제(예: ...opnApiMnfcCmpy01?serviceKey=인증키...)는 파라미터명이
+    # 소문자 "serviceKey"다. 대문자 "ServiceKey"로 보내면 INVALID_REQUEST_PARAMETER_ERROR가 난다.
+    q = {"serviceKey": SERVICE_KEY, **params}
     res = requests.get(url, params=q, timeout=15)
     try:
         body = res.json()

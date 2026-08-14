@@ -25,6 +25,23 @@ def test_detects_unregistered_approval_number():
     assert "🚨" in chat_tools.format_tool_answer(r)
 
 
+def test_detects_real_kfi_style_approval_number_without_type_prefix():
+    """실 KFI 데이터의 승인/인정번호는 mock처럼 '형식승인 제0000-0-000호' 형태가 아니라
+    '리소26-9'처럼 유형 접두어 없는 raw 번호로 저장된다. 이 형식도 감지돼야 한다."""
+    number = "리소26-9"
+    db_module.get_conn().execute(
+        "INSERT INTO approval_cache (number,type,item,company,approved_date) VALUES (?,?,?,?,?)",
+        (number, "KFI인정", "소화기의 소형리튬이온전지화재 소화성능", "주식회사 동아화이어", "2026-08-10"),
+    )
+    db_module.get_conn().commit()
+
+    r = chat_tools.detect_and_run(f"{number} 진짜예요?")
+    assert r is not None
+    assert r["tool"] == "check_approval"
+    assert r["args"]["number"] == number
+    assert r["result"]["status"] == "valid"
+
+
 def test_detects_company_with_hint_word():
     r = chat_tools.detect_and_run("대한안전산업(주)에서 사려는데 등록된 업체 맞나요?")
     assert r["tool"] == "check_company"

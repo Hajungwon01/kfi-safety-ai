@@ -14,7 +14,11 @@ from doc_analyzer import analyze_document
 from services import unit_service, notification_service
 
 APPROVAL_TYPE_RE = re.compile(r"(형식승인|성능인증|KFI\s*인정)")
+# 예전 mock 데이터 표기(예: "형식승인 제2022-3-045호")용 패턴. 실 KFI 데이터는 이 형식을 쓰지 않는다.
 APPROVAL_NUM_RE = re.compile(r"제\s?\d{4}\s?[-–]\s?\d{1,2}\s?[-–]\s?\d{2,4}\s?호")
+# 실 KFI 데이터의 승인/인정번호 표기(예: "리소26-9", "가스25-123")용 패턴 — 한글 접두어 + 연도(2자리)
+# + 붙임표 + 일련번호. UNIT_CODE_RE(로마자 접두어)와 겹치지 않도록 한글 접두어만 매칭한다.
+APPROVAL_NUM_RE_REAL = re.compile(r"\b[가-힣]{1,4}\d{2}[-–]\d{1,4}\b")
 UNIT_CODE_RE = re.compile(r"\b[A-Za-z]{3,5}[\s-]?\d{4,6}\b")
 COMPANY_HINT_RE = re.compile(r"(업체|회사|판매자|판매처)")
 COMPANY_NAME_RE = re.compile(r"[가-힣A-Za-z0-9&·]+(?:\(주\)|주식회사[가-힣A-Za-z0-9&·]*)")
@@ -41,14 +45,18 @@ PLACEHOLDER_HINTS = [
 
 def _extract_approval_number(text: str) -> str | None:
     num_m = APPROVAL_NUM_RE.search(text)
-    if not num_m:
-        return None
-    num_display = re.sub(r"\s+", "", num_m.group(0))
-    type_m = APPROVAL_TYPE_RE.search(text)
-    if type_m:
-        type_word = re.sub(r"\s+", "", type_m.group(0))
-        return f"{type_word} {num_display}"
-    return num_display
+    if num_m:
+        num_display = re.sub(r"\s+", "", num_m.group(0))
+        type_m = APPROVAL_TYPE_RE.search(text)
+        if type_m:
+            type_word = re.sub(r"\s+", "", type_m.group(0))
+            return f"{type_word} {num_display}"
+        return num_display
+    # 실 KFI 데이터 표기(예: "리소26-9")는 유형 접두어 없이 번호 자체가 DB 키이므로 그대로 반환한다.
+    real_m = APPROVAL_NUM_RE_REAL.search(text)
+    if real_m:
+        return real_m.group(0)
+    return None
 
 
 def _extract_unit_code(text: str) -> str | None:

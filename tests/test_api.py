@@ -119,6 +119,21 @@ def test_reports_stats_and_list_require_admin():
     assert r3.status_code == 200
 
 
+def test_admin_sample_data_requires_admin_and_returns_cached_rows():
+    r = client.get("/api/admin/sample-data")
+    assert r.status_code == 401
+
+    reg = client.post("/api/auth/register", json={"email": "notadmin2@example.com", "password": "pw1234"}).json()
+    r2 = client.get("/api/admin/sample-data", headers=auth_header(reg["token"]))
+    assert r2.status_code == 403
+
+    r3 = client.get("/api/admin/sample-data", headers=admin_header())
+    assert r3.status_code == 200
+    body = r3.json()
+    assert "validApprovals" in body and "companies" in body and "units" in body
+    assert body["counts"]["approval_cache"] >= len(body["validApprovals"])
+
+
 def test_register_cannot_self_grant_admin_role():
     reg = client.post("/api/auth/register", json={"email": "tryadmin@example.com", "password": "pw1234", "role": "admin"}).json()
     assert reg["user"]["role"] == "facility_manager"
